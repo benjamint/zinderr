@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zinderr - Connection Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: rgba(34, 197, 94, 0.3); }
+        .error { background: rgba(239, 68, 68, 0.3); }
+        .warning { background: rgba(245, 158, 11, 0.3); }
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Zinderr - Supabase Connection Test</h1>
+        
+        <div id="env-status" class="status warning">
+            Checking environment variables...
+        </div>
+        
+        <div id="connection-status" class="status warning">
+            Testing Supabase connection...
+        </div>
+        
+        <div id="database-status" class="status warning">
+            Checking database tables...
+        </div>
+        
+        <button onclick="testConnection()">🔄 Test Connection</button>
+        <button onclick="window.open('http://localhost:5173', '_blank')">🚀 Open Zinderr App</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://seytsbvtygkalvalugkk.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNleXRzYnZ0eWdrYWx2YWx1Z2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NjQ4ODIsImV4cCI6MjA3MDA0MDg4Mn0.uCBF5k62ppyvsJMsUC-PZk1jEvmU-yJhKnvv28f6xS4';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        function updateStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+        
+        async function testConnection() {
+            updateStatus('env-status', '✅ Environment variables are set', 'success');
+            
+            try {
+                // Test basic connection
+                const { data, error } = await supabase.from('profiles').select('count').limit(1);
+                
+                if (error) {
+                    updateStatus('connection-status', `❌ Connection failed: ${error.message}`, 'error');
+                    return;
+                }
+                
+                updateStatus('connection-status', '✅ Supabase connection successful!', 'success');
+                
+                // Test if tables exist
+                const tables = ['profiles', 'errands', 'bids', 'transactions', 'mutual_ratings', 'wallets'];
+                let existingTables = 0;
+                
+                for (const table of tables) {
+                    try {
+                        const { error } = await supabase.from(table).select('count').limit(1);
+                        if (!error) {
+                            existingTables++;
+                        }
+                    } catch (e) {
+                        console.log(`Table ${table} not found`);
+                    }
+                }
+                
+                if (existingTables >= 3) {
+                    updateStatus('database-status', `✅ Database setup complete (${existingTables}/${tables.length} tables found)`, 'success');
+                } else {
+                    updateStatus('database-status', `⚠️ Database setup incomplete (${existingTables}/${tables.length} tables found). Run migrations in Supabase.`, 'warning');
+                }
+                
+            } catch (error) {
+                updateStatus('connection-status', `❌ Connection error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Run test on page load
+        testConnection();
+    </script>
+</body>
+</html>
