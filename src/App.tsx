@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ChatProvider } from './contexts/ChatContext'
+import { ToastProvider } from './contexts/ToastContext'
 import { AuthForm } from './components/auth/AuthForm'
 import { Layout } from './components/Layout'
 import { AdminLayout } from './components/admin/AdminLayout'
@@ -10,7 +12,6 @@ import { testSupabaseConnection } from './lib/supabase'
 function AppContent() {
   const { user, profile, loading } = useAuth()
 
-  // Test Supabase connection on app load
   useEffect(() => {
     testSupabaseConnection()
   }, [])
@@ -43,7 +44,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ChatProvider>
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </ChatProvider>
     </AuthProvider>
   )
 }

@@ -57,21 +57,25 @@ export type Profile = {
   last_rating_update?: string
 }
 
-export type Errand = {
+export interface Errand {
   id: string
   poster_id: string
-  assigned_runner_id?: string
   title: string
   description: string
   location: string
   amount: number
-  status: 'open' | 'in_progress' | 'completed' | 'cancelled'
   deadline?: string
   notes?: string
-  image_url?: string
+  status: 'open' | 'in_progress' | 'completed' | 'cancelled'
   category: string
+  image_url?: string
+  assigned_runner_id?: string
   created_at: string
   updated_at: string
+  poster?: Profile
+  assigned_runner?: Profile
+  destination_lat?: number | null
+  destination_lng?: number | null
 }
 
 // Category constants
@@ -124,8 +128,10 @@ export type Bid = {
   runner_id: string
   amount: number
   message?: string
-  status: 'pending' | 'accepted' | 'rejected'
+  status: 'pending' | 'accepted' | 'rejected' | 'retracted'
   created_at: string
+  retracted_at?: string
+  retraction_reason?: string
   runner?: Profile
 }
 

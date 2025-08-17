@@ -1,30 +1,47 @@
+/* Import SF Pro font */
+@import url('https://fonts.cdnfonts.com/css/sf-pro-display');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Apply Inter as the default font */
+@layer base {
+  html {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+  
+  body {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+/* CSS Variables for consistent theming */
 :root {
-  --primary-color: #4d55bb;
-  --primary-hover: #3d45a8;
-  --primary-light: #6b73d1;
-  --primary-dark: #2d3598;
+  --primary-color: #04413F;
+  --primary-hover: #03302e;
+  --primary-light: #055a57;
+  --primary-dark: #03302e;
   --background-light: #f8f9fa;
-  --background-dark: #f1f3f4;
-  --text-primary: #1a1a1a;
+  --background-dark: #f9fafb;
+  --text-primary: #111827;
   --text-secondary: #6b7280;
   --text-muted: #9ca3af;
-  --border-color: #e5e7eb;
+  --border-color: #d1d5db;
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --error-color: #ef4444;
 }
 
+/* Base font settings */
 * {
-  box-sizing: border-box;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -33,7 +50,277 @@ body {
   color: var(--text-primary);
 }
 
-/* Custom utility classes */
+/* ===== FONT WEIGHT UTILITIES ===== */
+/* These must come after Tailwind to override it */
+.font-thin {
+  font-weight: 100 !important;
+}
+
+.font-extralight {
+  font-weight: 200 !important;
+}
+
+.font-light {
+  font-weight: 300 !important;
+}
+
+.font-normal {
+  font-weight: 400 !important;
+}
+
+.font-medium {
+  font-weight: 500 !important;
+}
+
+.font-semibold {
+  font-weight: 600 !important;
+}
+
+.font-bold {
+  font-weight: 700 !important;
+}
+
+.font-extrabold {
+  font-weight: 800 !important;
+}
+
+.font-black {
+  font-weight: 900 !important;
+}
+
+/* ===== HEADING STYLES ===== */
+/* Base heading styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+/* Individual heading weights */
+h1 {
+  font-weight: 800 !important;
+}
+
+h2 {
+  font-weight: 700 !important;
+}
+
+h3 {
+  font-weight: 700 !important;
+}
+
+h4 {
+  font-weight: 600 !important;
+}
+
+h5 {
+  font-weight: 600 !important;
+}
+
+h6 {
+  font-weight: 600 !important;
+}
+
+/* ===== TAILWIND FONT WEIGHT OVERRIDES ===== */
+/* Ensure Tailwind font weights work on all elements including headings */
+.text-2xl.font-bold,
+.text-xl.font-bold,
+.text-lg.font-bold,
+.text-base.font-bold,
+.text-sm.font-bold,
+.text-xs.font-bold {
+  font-weight: 700 !important;
+}
+
+.text-2xl.font-semibold,
+.text-xl.font-semibold,
+.text-lg.font-semibold,
+.text-base.font-semibold,
+.text-sm.font-semibold,
+.text-xs.font-semibold {
+  font-weight: 600 !important;
+}
+
+.text-2xl.font-extrabold,
+.text-xl.font-extrabold,
+.text-lg.font-extrabold,
+.text-base.font-extrabold,
+.text-sm.font-extrabold,
+.text-xs.font-extrabold {
+  font-weight: 800 !important;
+}
+
+.text-2xl.font-black,
+.text-xl.font-black,
+.text-lg.font-black,
+.text-base.font-black,
+.text-sm.font-black,
+.text-xs.font-black {
+  font-weight: 900 !important;
+}
+
+/* ===== HEADING + TAILWIND COMBINATIONS ===== */
+/* Ensure headings with Tailwind classes maintain proper weights */
+h1.text-2xl,
+h1.text-xl,
+h1.text-lg,
+h1.text-base,
+h1.text-sm,
+h1.text-xs {
+  font-weight: 800 !important;
+}
+
+h2.text-2xl,
+h2.text-xl,
+h2.text-lg,
+h2.text-base,
+h2.text-sm,
+h2.text-xs {
+  font-weight: 700 !important;
+}
+
+h3.text-2xl,
+h3.text-xl,
+h3.text-lg,
+h3.text-base,
+h3.text-sm,
+h3.text-xs {
+  font-weight: 700 !important;
+}
+
+h4.text-2xl,
+h4.text-xl,
+h4.text-lg,
+h4.text-base,
+h4.text-sm,
+h4.text-xs {
+  font-weight: 600 !important;
+}
+
+h5.text-2xl,
+h5.text-xl,
+h5.text-lg,
+h5.text-base,
+h5.text-sm,
+h5.text-xs {
+  font-weight: 600 !important;
+}
+
+h6.text-2xl,
+h6.text-xl,
+h6.text-lg,
+h6.text-base,
+h6.text-sm,
+h6.text-xs {
+  font-weight: 600 !important;
+}
+
+/* ===== UNIVERSAL FONT WEIGHT ENFORCEMENT ===== */
+/* Force specific font weights on all elements including headings */
+.font-black,
+h1.font-black,
+h2.font-black,
+h3.font-black,
+h4.font-black,
+h5.font-black,
+h6.font-black {
+  font-weight: 900 !important;
+}
+
+
+header h1.font-black,
+header h1.text-xl.font-black {
+  font-weight: 900 !important;
+  font-weight: 900 !important;
+  font-weight: 900 !important;
+}
+
+/* Force font-black to work everywhere */
+.font-black {
+  font-weight: 900 !important;
+  font-weight: 900 !important;
+  font-weight: 900 !important;
+}
+
+.font-extrabold,
+h1.font-extrabold,
+h2.font-extrabold,
+h3.font-extrabold,
+h4.font-extrabold,
+h5.font-extrabold,
+h6.font-extrabold {
+  font-weight: 800 !important;
+}
+
+.font-bold,
+h1.font-bold,
+h2.font-bold,
+h3.font-bold,
+h4.font-bold,
+h5.font-bold,
+h6.font-bold {
+  font-weight: 700 !important;
+}
+
+.font-semibold,
+h1.font-semibold,
+h2.font-semibold,
+h3.font-semibold,
+h4.font-semibold,
+h5.font-semibold,
+h6.font-semibold {
+  font-weight: 600 !important;
+}
+
+.font-medium,
+h1.font-medium,
+h2.font-medium,
+h3.font-medium,
+h4.font-medium,
+h5.font-medium,
+h6.font-medium {
+  font-weight: 500 !important;
+}
+
+.font-normal,
+h1.font-normal,
+h2.font-normal,
+h3.font-normal,
+h4.font-normal,
+h5.font-normal,
+h6.font-normal {
+  font-weight: 400 !important;
+}
+
+.font-light,
+h1.font-light,
+h2.font-light,
+h3.font-light,
+h4.font-light,
+h5.font-light,
+h6.font-light {
+  font-weight: 300 !important;
+}
+
+.font-extralight,
+h1.font-extralight,
+h2.font-extralight,
+h3.font-extralight,
+h4.font-extralight,
+h5.font-extralight,
+h6.font-extralight {
+  font-weight: 200 !important;
+}
+
+.font-thin,
+h1.font-thin,
+h2.font-thin,
+h3.font-thin,
+h4.font-thin,
+h5.font-thin,
+h6.font-thin {
+  font-weight: 100 !important;
+}
+
+/* ===== CUSTOM UTILITY CLASSES ===== */
 .bg-primary {
   background-color: var(--primary-color);
 }
@@ -46,8 +333,16 @@ body {
   background-color: var(--primary-light);
 }
 
+.bg-primary-dark {
+  background-color: var(--primary-dark);
+}
+
 .text-primary {
   color: var(--primary-color);
+}
+
+.text-primary-dark {
+  color: var(--primary-dark);
 }
 
 .border-primary {
@@ -58,12 +353,16 @@ body {
   --tw-ring-color: var(--primary-color);
 }
 
-/* Smooth transitions */
+/* ===== TRANSITIONS ===== */
 .transition-all {
   transition: all 0.2s ease-in-out;
 }
 
-/* Modern shadows */
+.transition-colors {
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+/* ===== SHADOWS ===== */
 .shadow-modern {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
@@ -72,11 +371,11 @@ body {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Clean button styles */
+/* ===== BUTTONS ===== */
 .btn-primary {
   background-color: var(--primary-color);
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.45rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
   transition: all 0.2s ease-in-out;
@@ -91,13 +390,13 @@ body {
 
 .btn-primary:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(77, 85, 187, 0.1);
+  box-shadow: 0 0 0 3px rgba(4, 65, 63, 0.1);
 }
 
 .btn-secondary {
   background-color: white;
   color: var(--text-primary);
-  padding: 0.75rem 1.5rem;
+  padding: 0.45rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
   transition: all 0.2s ease-in-out;
@@ -110,12 +409,34 @@ body {
   border-color: var(--text-secondary);
 }
 
-/* Card styles */
+.btn-danger {
+  background-color: var(--error-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== CARDS ===== */
 .card {
   background-color: white;
   border-radius: 0.75rem;
   border: 1px solid var(--border-color);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
 }
 
 .card-hover {
@@ -127,7 +448,7 @@ body {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Input styles */
+/* ===== INPUTS ===== */
 .input-modern {
   background-color: white;
   border: 1px solid var(--border-color);
@@ -137,15 +458,20 @@ body {
   transition: all 0.2s ease-in-out;
   width: 100%;
   box-sizing: border-box;
+  font-weight: 400;
 }
 
 .input-modern:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(77, 85, 187, 0.1);
+  box-shadow: 0 0 0 3px rgba(4, 65, 63, 0.1);
 }
 
-/* Specific padding for inputs with icons */
+.input-modern::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
 .input-modern.pl-10 {
   padding-left: 2.5rem !important;
 }
@@ -154,19 +480,64 @@ body {
   padding-right: 3rem !important;
 }
 
-/* Modal styles */
+/* ===== MODALS ===== */
 .modal-backdrop {
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50;
 }
 
 .modal-content {
   background-color: white;
-  border-radius: 1rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-radius: 2px;
+  box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.1), -4px 0 6px -2px rgba(0, 0, 0, 0.05);
+  width: 30rem;
+  max-width: 90vw;
+  max-height: 100vh;
+  overflow-y: auto;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 60;
 }
 
-/* Status colors */
+.modal-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.modal-slide-in {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-content {
+    width: calc(100vw - 30px);
+    max-width: calc(100vw - 30px);
+    margin: 15px 15px 15px 15px;
+    border-radius: 2px;
+  }
+}
+
+/* ===== STATUS COLORS ===== */
 .text-success {
   color: var(--success-color);
 }
@@ -189,4 +560,239 @@ body {
 
 .bg-error {
   background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* ===== HOVER STATES ===== */
+.hover\:bg-primary:hover {
+  background-color: var(--primary-color);
+}
+
+.hover\:bg-primary-dark:hover {
+  background-color: var(--primary-dark);
+}
+
+.hover\:bg-gray-50:hover {
+  background-color: #f9fafb;
+}
+
+.hover\:bg-gray-100:hover {
+  background-color: #f3f4f6;
+}
+
+.hover\:bg-gray-200:hover {
+  background-color: #e5e7eb;
+}
+
+.hover\:text-gray-700:hover {
+  color: #374151;
+}
+
+.hover\:text-gray-900:hover {
+  color: #111827;
+}
+
+.hover\:text-primary-dark:hover {
+  color: var(--primary-dark);
+}
+
+/* ===== UTILITIES ===== */
+.z-50 {
+  z-index: 50;
+}
+
+.z-60 {
+  z-index: 60;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+}
+
+/* ===== SEARCH AND FILTER ===== */
+.search-filter-container {
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+}
+
+.search-input {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+  box-sizing: border-box;
+  font-weight: 400;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(4, 65, 63, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.filter-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  border: none;
+}
+
+.filter-button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.filter-button.inactive {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.filter-button.inactive:hover {
+  background-color: #e5e7eb;
+}
+
+.category-filter-container {
+  margin-top: 1rem;
+}
+
+.category-filter-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.75rem;
+}
+
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ===== GRID LAYOUT ===== */
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .search-filter-container {
+    padding: 1rem;
+  }
+
+  .category-buttons {
+    flex-direction: column;
+  }
+}
+
+/* ===== TEXT TRUNCATION UTILITIES ===== */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.line-clamp-4 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+/* ===== TASK PILL STYLES ===== */
+/* Override default Tailwind classes for task pills */
+.bg-green-800 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255, 255, 255) !important;
+  border: solid 1px #04413f !important;
+}
+
+/* Task pills with both classes - ensure dark green text */
+.bg-green-800.text-white {
+  --tw-text-opacity: 1;
+  color: rgb(4, 65, 63) !important;
+}
+
+/* Ensure buttons maintain white text */
+button.text-white,
+.btn-primary,
+.btn-primary span,
+.btn-primary * {
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Action buttons in errand cards - maintain white text */
+.bg-primary.text-white {
+  color: rgb(255, 255, 255) !important;
+}
+
+/* Override button styles for task pills specifically */
+.bg-green-800.text-white {
+  color: rgb(4, 65, 63) !important;
+}
+
+/* Additional specificity for task pills */
+span.bg-green-800.text-white,
+div.bg-green-800.text-white {
+  color: rgb(4, 65, 63) !important;
 }

@@ -8,7 +8,12 @@ interface MutualRatingModalProps {
   otherUser: Profile
   ratingType: 'poster_to_runner' | 'runner_to_poster'
   onClose: () => void
-  onComplete: () => void
+  onComplete: (ratingData: {
+    rating: number;
+    comment: string | null;
+    ratingType: 'poster_to_runner' | 'runner_to_poster';
+    ratedUserId: string;
+  }) => void;
 }
 
 export function MutualRatingModal({ 
@@ -76,9 +81,30 @@ export function MutualRatingModal({
         }])
 
       if (error) throw error
-      onComplete()
+
+      // Update the runner's rating in the profiles table
+      if (ratingType === 'poster_to_runner') {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            rating: supabase.rpc('calculate_average_rating', { user_id: otherUser.id }),
+            total_ratings: supabase.rpc('get_total_ratings', { user_id: otherUser.id })
+          })
+          .eq('id', otherUser.id)
+
+        if (updateError) {
+          console.error('Error updating runner rating:', updateError)
+        }
+      }
+
+      onComplete({
+        rating,
+        comment: comment.trim() || null,
+        ratingType,
+        ratedUserId: otherUser.id
+      })
     } catch (error) {
-      console.error('Error submitting rating:', error)
+      console.error('❌ Error submitting rating:', error)
       alert('Error submitting rating. Please try again.')
     } finally {
       setLoading(false)
@@ -92,7 +118,7 @@ export function MutualRatingModal({
       <div className="modal-content max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
-            Rate {isRatingRunner ? 'Runner' : 'Poster'}
+            Rate {isRatingRunner ? 'runner' : 'poster'}
           </h2>
           <button
             onClick={onClose}
@@ -130,9 +156,10 @@ export function MutualRatingModal({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Rating Stars */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
-                How was your experience?
+                How would you rate this {isRatingRunner ? 'runner' : 'poster'}?
               </label>
               <div className="flex justify-center space-x-1">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -142,80 +169,82 @@ export function MutualRatingModal({
                     onClick={() => setRating(star)}
                     onMouseEnter={() => setHoveredRating(star)}
                     onMouseLeave={() => setHoveredRating(0)}
-                    className="p-1 focus:outline-none transition-colors"
+                    className="p-1"
                   >
                     <Star
-                      className={`w-8 h-8 ${
+                      className={`w-8 h-8 transition-colors ${
                         star <= (hoveredRating || rating)
                           ? 'text-warning fill-current'
                           : 'text-gray-300'
-                      } transition-colors`}
+                      }`}
                     />
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Comment (Optional)
-              </label>
-              <div className="relative">
-                <MessageCircle className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  rows={3}
-                  className="input-modern w-full pl-10 pr-4 resize-none"
-                  placeholder="Share your experience"
-                />
+              <div className="text-center mt-2">
+                <span className="text-sm text-gray-600">
+                  {rating === 0 && 'Select a rating'}
+                  {rating === 1 && 'Poor'}
+                  {rating === 2 && 'Fair'}
+                  {rating === 3 && 'Good'}
+                  {rating === 4 && 'Very good'}
+                  {rating === 5 && 'Excellent'}
+                </span>
               </div>
             </div>
 
+            {/* Comment */}
+            <div>
+              <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-2">
+                Comment (optional)
+              </label>
+              <textarea
+                id="comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder={`Share your experience with this ${isRatingRunner ? 'runner' : 'poster'}...`}
+                className="input-modern"
+                rows={3}
+              />
+            </div>
+
             {/* Report Option */}
-            <div className="border-t pt-4">
+            <div>
               <button
                 type="button"
                 onClick={() => setShowReport(!showReport)}
-                className="flex items-center space-x-2 text-error hover:text-error text-sm font-medium"
+                className="flex items-center space-x-2 text-sm text-red-600 hover:text-red-700"
               >
                 <Flag className="w-4 h-4" />
-                <span>Report an issue</span>
+                <span>{showReport ? 'Hide report' : 'Report this user'}</span>
               </button>
               
               {showReport && (
-                <div className="mt-3 p-3 bg-error rounded-lg">
-                  <div className="flex items-start space-x-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-white mt-0.5" />
-                    <span className="text-sm text-white font-medium">Report Issue</span>
-                  </div>
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <label htmlFor="reportReason" className="block text-sm font-medium text-red-700 mb-2">
+                    Report reason
+                  </label>
                   <textarea
+                    id="reportReason"
                     value={reportReason}
                     onChange={(e) => setReportReason(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-red-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
-                    placeholder="Describe what went wrong..."
+                    placeholder="Please describe the issue..."
+                    className="input-modern border-red-300 focus:border-red-500 focus:ring-red-500"
+                    rows={2}
+                    required={showReport}
                   />
                 </div>
               )}
             </div>
 
-            <div className="flex space-x-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn-secondary flex-1"
-              >
-                Skip
-              </button>
-              <button
-                type="submit"
-                disabled={loading || rating === 0}
-                className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Submitting...' : 'Submit Rating'}
-              </button>
-            </div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={rating === 0 || loading}
+              className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Submitting...' : 'Submit rating'}
+            </button>
           </form>
         </div>
       </div>

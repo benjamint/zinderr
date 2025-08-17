@@ -3,14 +3,16 @@ import { X, MapPin, DollarSign, Calendar, Camera, FileText, Upload, Image as Ima
 import { supabase, ERRAND_CATEGORIES, CATEGORY_ICONS, CATEGORY_COLORS, Errand } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { GhanaAddressInput } from '../common/GhanaAddressInput'
+import { TimePicker } from '../common/TimePicker'
 
 interface EditErrandModalProps {
   errand: Errand
   onClose: () => void
   onUpdate: () => void
+  onDelete: () => void
 }
 
-export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalProps) {
+export function EditErrandModal({ errand, onClose, onUpdate, onDelete }: EditErrandModalProps) {
   const { profile } = useAuth()
   const [loading, setLoading] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(errand.image_url || null)
@@ -20,15 +22,29 @@ export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalPr
     description: errand.description,
     location: errand.location,
     amount: errand.amount.toString(),
-    deadline: errand.deadline || '',
+    deadlineDate: errand.deadline ? errand.deadline.split('T')[0] : '',
+    deadlineTime: errand.deadline ? errand.deadline.split('T')[1] : '',
     notes: errand.notes || '',
     image_url: errand.image_url || '',
-    category: errand.category
+    category: errand.category,
+    destination_lat: errand.destination_lat || null,
+    destination_lng: errand.destination_lng || null
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!profile) return
+
+    // Validate deadline is in the future
+    if (formData.deadlineDate && formData.deadlineTime) {
+      const deadlineDateTime = new Date(`${formData.deadlineDate}T${formData.deadlineTime}`)
+      const now = new Date()
+      
+      if (deadlineDateTime <= now) {
+        alert('Deadline must be in the future. Please select a future date and time.')
+        return
+      }
+    }
 
     setLoading(true)
     try {
@@ -39,10 +55,12 @@ export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalPr
           description: formData.description,
           location: formData.location,
           amount: parseFloat(formData.amount),
-          deadline: formData.deadline || null,
+          deadline: formData.deadlineDate && formData.deadlineTime ? `${formData.deadlineDate}T${formData.deadlineTime}` : null,
           notes: formData.notes || null,
           image_url: formData.image_url || null,
-          category: formData.category
+          category: formData.category,
+          destination_lat: formData.destination_lat || null,
+          destination_lng: formData.destination_lng || null
         })
         .eq('id', errand.id)
         .eq('poster_id', profile.id) // Security: only poster can edit
@@ -127,7 +145,7 @@ export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalPr
         .eq('poster_id', profile!.id) // Security: only poster can delete
 
       if (error) throw error
-      onUpdate()
+      onDelete()
       onClose()
     } catch (error) {
       console.error('Error deleting errand:', error)
@@ -141,7 +159,7 @@ export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalPr
     <div className="modal-backdrop fixed inset-0 flex items-center justify-center p-4 z-50">
       <div className="modal-content max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Edit Errand</h2>
+          <h2 className="text-xl font-bold text-gray-900">Edit errand</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -151,71 +169,98 @@ export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalPr
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-                className="input-modern w-full"
-                placeholder="What do you need help with?"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                required
-                className="input-modern w-full"
-              >
-                {ERRAND_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {CATEGORY_ICONS[category]} {category}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Title */}
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              Errand title *
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              className="input-modern w-full"
+              required
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Amount (₵) *
-              </label>
+          {/* Category */}
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+              Category *
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleInputChange}
+              className="input-modern w-full"
+              required
+            >
+              {ERRAND_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS]} {category}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Amount */}
+          <div>
+            <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
+              Budget amount (₵) *
+            </label>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="number"
+                id="amount"
                 name="amount"
                 value={formData.amount}
                 onChange={handleInputChange}
-                required
-                min="1"
+                className="input-modern w-full pl-10"
                 step="0.01"
-                className="input-modern w-full"
-                placeholder="How much are you willing to pay?"
+                min="0"
+                required
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Deadline (Optional)
-              </label>
-              <input
-                type="datetime-local"
-                name="deadline"
-                value={formData.deadline}
-                onChange={handleInputChange}
-                className="input-modern w-full"
-              />
+          {/* Deadline */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Deadline (optional)
+            </label>
+            <div className="space-y-2">
+              <div className="flex space-x-3">
+                <div className="flex-1">
+                  <label htmlFor="deadlineDate" className="block text-xs text-gray-600 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    name="deadlineDate"
+                    value={formData.deadlineDate}
+                    onChange={handleInputChange}
+                    className="input-modern"
+                    min={new Date().toISOString().split('T')[0]} // Prevent past dates
+                  />
+                </div>
+                <div className="flex-1">
+                  <label htmlFor="deadlineTime" className="block text-xs text-gray-600 mb-1">
+                    Time
+                  </label>
+                  <TimePicker
+                    value={formData.deadlineTime}
+                    onChange={(time) => setFormData({ ...formData, deadlineTime: time })}
+                    placeholder="Select time"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">
+                Select when you need this errand completed by
+              </p>
             </div>
           </div>
 
@@ -234,21 +279,63 @@ export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalPr
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Location *
+          {/* Location */}
+          <div className="space-y-2">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+              Location
             </label>
-            <GhanaAddressInput
+            <input
+              type="text"
+              id="location"
               value={formData.location}
-              onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
-              placeholder="Where should this errand be completed?"
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              placeholder="Enter pickup/delivery location"
+              className="input-modern"
               required
             />
           </div>
 
+          {/* Destination Coordinates */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="destination_lat" className="block text-sm font-medium text-gray-700">
+                Destination latitude (optional)
+              </label>
+              <input
+                type="number"
+                id="destination_lat"
+                step="any"
+                value={formData.destination_lat || ''}
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  destination_lat: e.target.value ? parseFloat(e.target.value) : null 
+                })}
+                placeholder="e.g., 5.5600"
+                className="input-modern"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="destination_lng" className="block text-sm font-medium text-gray-700">
+                Destination longitude (optional)
+              </label>
+              <input
+                type="number"
+                id="destination_lng"
+                step="any"
+                value={formData.destination_lng || ''}
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  destination_lng: e.target.value ? parseFloat(e.target.value) : null 
+                })}
+                placeholder="e.g., -0.2057"
+                className="input-modern"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Image (Optional)
+              Image (optional)
             </label>
             <div className="space-y-4">
               <div className="relative">
@@ -260,34 +347,35 @@ export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalPr
                   disabled={uploadingImage}
                 />
                 {uploadingImage && (
-                  <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                  <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   </div>
                 )}
               </div>
-              
               {imagePreview && (
-                <div className="mt-2">
+                <div className="relative">
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                    className="w-full h-32 object-cover rounded-lg"
                   />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImagePreview(null)
+                      setFormData({ ...formData, image_url: '' })
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="flex space-x-4 pt-4">
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={loading}
-              className="btn-secondary flex-1 flex items-center justify-center space-x-2 text-error hover:text-error"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
-            </button>
+          {/* Action Buttons */}
+          <div className="flex space-x-3 pt-4">
             <button
               type="button"
               onClick={onClose}
@@ -297,10 +385,18 @@ export function EditErrandModal({ errand, onClose, onUpdate }: EditErrandModalPr
             </button>
             <button
               type="submit"
-              disabled={loading || uploadingImage}
+              disabled={loading}
               className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Updating...' : 'Update Errand'}
+              {loading ? 'Updating...' : 'Update errand'}
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={loading}
+              className="btn-danger flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Deleting...' : 'Delete errand'}
             </button>
           </div>
         </form>

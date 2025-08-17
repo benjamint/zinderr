@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { MapPin, DollarSign, Clock, Calendar, Star, Search, Filter } from 'lucide-react'
+import { MapPin, DollarSign, Clock, Calendar, Star, Search, Filter, RefreshCw } from 'lucide-react'
 import { supabase, Errand, ERRAND_CATEGORIES, CATEGORY_ICONS, CATEGORY_COLORS } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
 import { ErrandCard } from './ErrandCard'
-import { MyTasksModal } from './MyTasksModal'
+import { MyTasksPage } from './MyTasksPage'
 
 export function RunnerDashboard() {
   const { profile } = useAuth()
+  const { showToast } = useToast()
   const [availableErrands, setAvailableErrands] = useState<Errand[]>([])
   const [myTasks, setMyTasks] = useState<Errand[]>([])
   const [loading, setLoading] = useState(true)
@@ -14,16 +16,104 @@ export function RunnerDashboard() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All')
   const [filterAmount, setFilterAmount] = useState('')
   const [showMyTasks, setShowMyTasks] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState<number>(Date.now())
 
   useEffect(() => {
     if (profile) {
       fetchErrands()
       fetchMyTasks()
+      
+      // Set up real-time subscriptions for errand changes
+      const errandsChannel = supabase
+        .channel('errands_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'errands'
+          },
+          (payload) => {
+    
+            // Refresh data when errands change
+            if (payload.eventType === 'DELETE') {
+
+              // Remove deleted errand from both lists
+              setAvailableErrands(prev => {
+                const filtered = prev.filter(e => e.id !== payload.old.id)
+
+                return filtered
+              })
+              setMyTasks(prev => {
+                const filtered = prev.filter(e => e.id !== payload.old.id)
+
+                return filtered
+              })
+              setLastUpdate(Date.now()) // Force re-render
+            } else if (payload.eventType === 'UPDATE') {
+
+              // Update errand in both lists
+              const updatedErrand = payload.new as Errand
+              setAvailableErrands(prev => 
+                prev.map(e => e.id === updatedErrand.id ? updatedErrand : e)
+              )
+              setMyTasks(prev => 
+                prev.map(e => e.id === updatedErrand.id ? updatedErrand : e)
+              )
+              setLastUpdate(Date.now()) // Force re-render
+            } else if (payload.eventType === 'INSERT') {
+              
+              // Add new errand to available list if it's open and not posted by current user
+              const newErrand = payload.new as Errand
+              if (newErrand.status === 'open' && newErrand.poster_id !== profile.id) {
+                setAvailableErrands(prev => [newErrand, ...prev])
+                setLastUpdate(Date.now()) // Force re-render
+              }
+            }
+          }
+        )
+        .subscribe()
+
+      // Set up real-time subscriptions for bid changes
+      const bidsChannel = supabase
+        .channel('bids_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bids',
+            filter: `runner_id=eq.${profile.id}`
+          },
+          (payload) => {
+    
+            if (payload.eventType === 'UPDATE') {
+              const updatedBid = payload.new
+              if (updatedBid.status === 'accepted') {
+                showToast('Your bid has been accepted!', 'success')
+              } else if (updatedBid.status === 'rejected') {
+                showToast('Your bid was rejected.', 'info')
+              }
+            }
+            // Force re-render to update bid status
+            setLastUpdate(Date.now())
+          }
+        )
+        .subscribe()
+
+      
+
+      // Cleanup subscription on unmount
+      return () => {
+        supabase.removeChannel(errandsChannel)
+        supabase.removeChannel(bidsChannel)
+      }
     }
   }, [profile])
 
   const fetchErrands = async () => {
     try {
+
       const { data, error } = await supabase
         .from('errands')
         .select(`
@@ -35,9 +125,10 @@ export function RunnerDashboard() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
+      
       setAvailableErrands(data || [])
     } catch (error) {
-      console.error('Error fetching errands:', error)
+      console.error('❌ Error fetching errands:', error)
     } finally {
       setLoading(false)
     }
@@ -45,6 +136,7 @@ export function RunnerDashboard() {
 
   const fetchMyTasks = async () => {
     try {
+
       const { data, error } = await supabase
         .from('errands')
         .select(`
@@ -55,9 +147,10 @@ export function RunnerDashboard() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
+      
       setMyTasks(data || [])
     } catch (error) {
-      console.error('Error fetching my tasks:', error)
+      console.error('❌ Error fetching my tasks:', error)
     }
   }
 
@@ -89,25 +182,47 @@ export function RunnerDashboard() {
     )
   }
 
+  // If showing My Tasks, render the full page
+  if (showMyTasks) {
+    return (
+      <MyTasksPage
+        onClose={() => setShowMyTasks(false)}
+      />
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Available Errands</h1>
-          <p className="text-gray-600 mt-1">Find errands near you and start helping</p>
+          <h1 className="text-2xl font-bold text-gray-900">Available errands</h1>
+          <p className="text-gray-600">Find errands to help with and earn money</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowMyTasks(true)}
             className="btn-secondary flex items-center space-x-2"
           >
-            <Clock className="w-4 h-4" />
-            <span>My Tasks ({myTasks.length})</span>
+            <Calendar className="w-4 h-4" />
+            <span>My tasks ({myTasks.length})</span>
+          </button>
+          <button
+            onClick={() => {
+              fetchErrands()
+              fetchMyTasks()
+              setLastUpdate(Date.now())
+            }}
+            className="btn-secondary flex items-center space-x-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh</span>
           </button>
         </div>
       </div>
 
-      <div className="card p-6">
+      {/* Search and Filters */}
+      <div className="card">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -141,7 +256,7 @@ export function RunnerDashboard() {
 
         {/* Category Filter */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-3">Filter by Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-3">Filter by category</label>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedCategory('All')}
@@ -151,7 +266,7 @@ export function RunnerDashboard() {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              All Categories
+              All categories
             </button>
             {ERRAND_CATEGORIES.map((category) => (
               <button
@@ -188,26 +303,17 @@ export function RunnerDashboard() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredErrands.map((errand) => (
             <ErrandCard
-              key={errand.id}
+              key={`${errand.id}-${lastUpdate}`}
               errand={errand}
               onUpdate={() => {
                 fetchErrands()
                 fetchMyTasks()
+                setLastUpdate(Date.now())
               }}
+              lastUpdate={lastUpdate}
             />
           ))}
         </div>
-      )}
-
-      {showMyTasks && (
-        <MyTasksModal
-          tasks={myTasks}
-          onClose={() => setShowMyTasks(false)}
-          onUpdate={() => {
-            fetchMyTasks()
-            fetchErrands()
-          }}
-        />
       )}
     </div>
   )

@@ -251,9 +251,17 @@ export function HistoryModal({ userType, onClose }: HistoryModalProps) {
                     <div className="bg-white rounded-lg p-3">
                       <p className="text-sm text-gray-600 mb-1">Errand posted by:</p>
                       <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">{errand.poster.full_name.charAt(0)}</span>
-                        </div>
+                        {errand.poster.avatar_url ? (
+                          <img
+                            src={errand.poster.avatar_url}
+                            alt={errand.poster.full_name}
+                            className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">{errand.poster.full_name.charAt(0)}</span>
+                          </div>
+                        )}
                         <span className="font-medium text-gray-900">
                           {errand.poster.display_username && errand.poster.username 
                             ? errand.poster.username 
@@ -271,9 +279,17 @@ export function HistoryModal({ userType, onClose }: HistoryModalProps) {
                     <div className="bg-white rounded-lg p-3">
                       <p className="text-sm text-gray-600 mb-1">Completed by:</p>
                       <div className="flex items-center space-x-2">
-                        <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">{errand.assigned_runner.full_name.charAt(0)}</span>
-                        </div>
+                        {errand.assigned_runner.avatar_url ? (
+                          <img
+                            src={errand.assigned_runner.avatar_url}
+                            alt={errand.assigned_runner.full_name}
+                            className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">{errand.assigned_runner.full_name.charAt(0)}</span>
+                          </div>
+                        )}
                         <span className="font-medium text-gray-900">
                           {errand.assigned_runner.display_username && errand.assigned_runner.username 
                             ? errand.assigned_runner.username 
